@@ -15,6 +15,12 @@ import (
 )
 
 func main() {
+	url, key := os.Getenv("SUPABASE_URL"), os.Getenv("SUPABASE_KEY")
+	if url == "" || key == "" {
+		fmt.Println("SUPABASE_URL or SUPABASE_KEY environment variables not set")
+		os.Exit(1)
+	}
+	
 	err := database.Init(os.Getenv("SUPABASE_URL"), os.Getenv("SUPABASE_KEY"))
 	if err != nil {
 		fmt.Println("database failed to initialize", err)
