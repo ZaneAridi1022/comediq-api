@@ -1,0 +1,72 @@
+venues:
+    id             SERIAL
+    address        STRING
+    name           STRING
+    city           STRING
+    neighbourhood  STRING
+    borough        STRING
+    type           STRING
+    contact        STRING
+
+venue_rooms:
+    id         SERIAL
+    venue_id   SERIAL
+    room_name  STRING
+
+upcoming_show_instances:
+    id                   SERIAL
+    venue_room_id        SERIAL
+    name                 STRING
+    signup_instructions  STRING
+    notes                STRING | NULL
+    audience_cost        STRING | NULL
+    comedian_cost        STRING | NULL
+    stage_time           STRING | NULL
+    host                 STRING | NULL
+    sms                  STRING | NULL
+    verified             STRING
+    comedian_lineup      STRING[]
+    start_time           DTZ
+    end_time             DTZ
+    active               BOOLEAN
+
+show_definitions:
+    id                   SERIAL
+    venue_room_id        SERIAL
+    name                 STRING
+    signup_instructions  STRING
+    notes                STRING | NULL
+    audience_cost        STRING | NULL
+    comedian_cost        STRING | NULL
+    stage_time           STRING | NULL
+    host                 STRING | NULL
+    sms                  STRING | NULL
+    verified             STRING
+    occurrence_rules     schedule_rule_ids: <SERIAL | NULL>[7]
+
+historical_show_instances:
+    id              SERIAL
+    venue_room_id   SERIAL
+    name            STRING 
+    host            STRING | NULL
+    audience_cost   STRING | NULL
+    comedian_cost   STRING | NULL
+    stage_time      STRING | NULL
+    comedian_lineup STRING[]
+    start_time      DTZ
+    end_time        DTZ
+
+performance_notes:
+    id                  SERIAL
+	comedian_id         UUID
+	historical_show_id  SERIAL
+	comedian_notes      STRING
+	video_url           STRING
+
+one_month_day_rule:
+    id: SERIAL
+    monthsPreparedInAdvance: int (default 1)
+    onlyLastDayOfMonth: bool
+    weeklyPolicy: [bool, bool, bool, bool, bool]
+    StartTime: string
+    EndTime: string
