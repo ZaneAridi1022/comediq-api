@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-  "github.com/google/uuid"
-	"github.com/comediq-api/types"
 	"github.com/comediq-api/database"
+	"github.com/comediq-api/types"
+	"github.com/google/uuid"
 )
 
 func ReadCSV() {
@@ -30,7 +30,7 @@ func ReadCSV() {
 		fmt.Println("Error reading records:", err)
 		return
 	}
-	
+
 	for j, record := range records {
 		if j == 0 {
 			continue // Skip header row
@@ -62,21 +62,21 @@ func ReadCSV() {
 			ChangesUpdates:     ptr(record[14]),
 			LastVerified:       &verified,
 			Active:             &active,
-			SMS:        				ptr(strings.TrimSpace(record[16])),
+			SMS:                ptr(strings.TrimSpace(record[16])),
 			City:               &newYork,
 		}
 
-	fmt.Printf("Mic details %d: %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v\n", j, 
-		openMic.UniqueIdentifier, *openMic.OpenMic, *openMic.Day, 
-		*openMic.StartTime, *openMic.LatestEndTime, 
-		*openMic.VenueName, *openMic.Borough, 
-		*openMic.Neighborhood, *openMic.Location, 
-		*openMic.VenueType, *openMic.Cost, 
-		*openMic.StageTime, *openMic.SignUpInstructions, 
-		*openMic.HostsOrganizers, *openMic.ChangesUpdates, 
-		*openMic.LastVerified)
-	database.UpsertData(openMic, "open_mics_historical")
-	micSet[record[0]] = openMic.UniqueIdentifier
+		fmt.Printf("Mic details %d: %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v\n", j,
+			openMic.UniqueIdentifier, *openMic.OpenMic, *openMic.Day,
+			*openMic.StartTime, *openMic.LatestEndTime,
+			*openMic.VenueName, *openMic.Borough,
+			*openMic.Neighborhood, *openMic.Location,
+			*openMic.VenueType, *openMic.Cost,
+			*openMic.StageTime, *openMic.SignUpInstructions,
+			*openMic.HostsOrganizers, *openMic.ChangesUpdates,
+			*openMic.LastVerified)
+		database.UpsertData(openMic, "open_mics_historical")
+		micSet[record[0]] = openMic.UniqueIdentifier
 	}
 
 	fmt.Println("Mic Set:", micSet)
@@ -111,25 +111,20 @@ func ReadCSV() {
 			ptr(record2[4]),
 			strings.TrimSpace(record2[6]),
 		)
-		
+
 		if err != nil {
 			fmt.Println("Error creating profile mic for record:", err)
 			return
 		}
-		fmt.Printf("Profile Mic %d: %v, %v, %v, %v, %v, %v, %v\n", i, 
-			profileMic.ID, profileMic.ProfileID, profileMic.OpenMicID, 
-			profileMic.ScheduleType, profileMic.Notes, 
+		fmt.Printf("Profile Mic %d: %v, %v, %v, %v, %v, %v, %v\n", i,
+			profileMic.ID, profileMic.ProfileID, profileMic.OpenMicID,
+			profileMic.ScheduleType, profileMic.Notes,
 			profileMic.CreatedAt, profileMic.LastModified)
 		database.UpsertData(profileMic, "profile_open_mics")
 	}
 }
 
 func ptr(s string) *string {
-    trimmed := strings.TrimSpace(s)
-    return &trimmed
+	trimmed := strings.TrimSpace(s)
+	return &trimmed
 }
-
-
-
-
-

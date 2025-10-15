@@ -1,0 +1,68 @@
+package historical
+
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+
+	"github.com/comediq-api/database"
+	"github.com/comediq-api/venues"
+)
+
+type databaseRow struct {
+	ID             *int32    `json:"id"`
+	VenueRoomID    int32     `json:"venue_room_id"`
+	Name           string    `json:"name"`
+	Host           *string   `json:"host"`
+	AudienceCost   *string   `json:"audience_cost"`
+	ComedianCost   *string   `json:"comedian_cost"`
+	StageTime      *string   `json:"stage_time"`
+	ComedianLineup []string  `json:"comedian_lineup"`
+	StartTime      time.Time `json:"start_time"`
+	EndTime        time.Time `json:"end_time"`
+}
+
+func create(show *Show) (int32, error) {
+	if show.ID != nil {
+		return 0, fmt.Errorf("show already has an ID (does it exist already?)")
+	}
+
+	venueRoomID, err := venues.UpsertVenueRoom(&show.VenueRoom)
+	if err != nil {
+		return 0, err
+	}
+
+	dbRow := databaseRow{
+		VenueRoomID:    venueRoomID,
+		Name:           show.Name,
+		Host:           show.Host,
+		AudienceCost:   show.AudienceCost,
+		ComedianCost:   show.ComedianCost,
+		StageTime:      show.StageTime,
+		ComedianLineup: show.ComedianLineup,
+		StartTime:      show.StartTime,
+		EndTime:        show.EndTime,
+	}
+	data, _, err := database.Client.From("historical_show_instances").
+		Insert(dbRow, false, "", "", "").
+		Execute()
+	if err != nil {
+		return 0, err
+	}
+
+	return unmarshalID(data)
+}
+
+func unmarshalID(data []byte) (int32, error) {
+	var result []struct {
+		ID int32 `json:"id"`
+	}
+	err := json.Unmarshal(data, &result)
+	if err != nil {
+		return 0, err
+	}
+	if len(result) == 0 {
+		return 0, fmt.Errorf("database operation returned nothing")
+	}
+	return result[0].ID, nil
+}

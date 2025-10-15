@@ -1,9 +1,9 @@
 package helpers
 
 import (
-	"time"
 	"fmt"
 	"strings"
+	"time"
 )
 
 func ClockAdd(clockStr string, minutes int) (string, error) {

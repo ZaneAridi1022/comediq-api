@@ -3,13 +3,13 @@ package webscrape
 import (
 	"fmt"
 	"strings"
-	
+
 	"github.com/gocolly/colly/v2"
 	"github.com/google/uuid"
 
-	"github.com/comediq-api/types"
-	"github.com/comediq-api/helpers"
 	"github.com/comediq-api/database"
+	"github.com/comediq-api/helpers"
+	"github.com/comediq-api/types"
 )
 
 var client *colly.Collector
@@ -41,26 +41,26 @@ func Init() {
 				currentDay = day
 				return true
 			}
-			
+
 			duration := "5 min"
 			city := "Los Angeles"
 			uuid := uuid.New()
 			openMic := types.HistoricalMic{
 				UniqueIdentifier: uuid,
-				Day: &currentDay,
-				StageTime: &duration,
-				City: &city,
+				Day:              &currentDay,
+				StageTime:        &duration,
+				City:             &city,
 			}
-			
+
 			// fmt.Println("Row", i, ":", el.Text)
 			el.ForEach("td", func(j int, td *colly.HTMLElement) {
-				if (j == 0) {
+				if j == 0 {
 					openMic.StartTime = &td.Text
 					endTime, err := helpers.ClockAdd(td.Text, 60)
 
 					if err != nil {
 						fmt.Println("Error adding time:", err)
-						return 
+						return
 					}
 					openMic.LatestEndTime = &endTime
 				} else {
@@ -70,23 +70,24 @@ func Init() {
 					openMic.Location = &location
 					href, exists := a.Attr("href")
 					openMic.VenueName = &venue
-					
+
 					if !exists {
 						fmt.Println("No details on", venue)
 					}
 					ScrapeMic(&openMic, href)
 					fmt.Println(openMic.UniqueIdentifier.String() + "\n" + *openMic.VenueName + "\n" + *openMic.Location + "\n" +
-					 href + "\n" + *openMic.Cost + "\n" + *openMic.StartTime + "\n" + *openMic.LatestEndTime + "\n" + *openMic.Day + "\n" + *openMic.OpenMic + "\n---")
-					
+						href + "\n" + *openMic.Cost + "\n" + *openMic.StartTime + "\n" + *openMic.LatestEndTime + "\n" + *openMic.Day + "\n" + *openMic.OpenMic + "\n---")
+
 					active := true
 					lastVerified := "Unverified"
 
 					openMic.Active = &active
 					openMic.LastVerified = &lastVerified
 					database.UpsertData(openMic, "open_mics_historical")
-					
-				// fmt.Println("Col", j, ":", td.Text)
-			}})
+
+					// fmt.Println("Col", j, ":", td.Text)
+				}
+			})
 			return true
 		})
 	})
@@ -94,10 +95,9 @@ func Init() {
 	client.Visit("https://badslava.com/open-mics.php?city=Los%20Angeles&state=CA")
 }
 
-
 var fieldMap = map[string]func(*types.HistoricalMic) **string{
 	"Event Name": func(h *types.HistoricalMic) **string { return &h.OpenMic },
-	"Cost":      func(h *types.HistoricalMic) **string { return &h.Cost },
+	"Cost":       func(h *types.HistoricalMic) **string { return &h.Cost },
 }
 
 func ScrapeMic(openMic *types.HistoricalMic, href string) {
