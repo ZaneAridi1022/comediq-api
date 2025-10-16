@@ -8,9 +8,9 @@ import (
 )
 
 type venueDatabaseRow struct {
-	ID            *int32 `json:"id"`
-	Address       string `json:"address"`
+	ID            *int32 `json:"id,omitempty"`
 	Name          string `json:"name"`
+	Address       string `json:"address"`
 	City          string `json:"city"`
 	Neighbourhood string `json:"neighbourhood"`
 	Borough       string `json:"borough"`
@@ -19,24 +19,24 @@ type venueDatabaseRow struct {
 }
 
 type venueRoomDatabaseRow struct {
-	ID       *int32 `json:"id"`
-	VenueID  int32  `json:"venue_id"`
-	RoomName string `json:"room_name"`
+	ID      *int32 `json:"id,omitempty"`
+	VenueID int32  `json:"venue_id"`
+	Name    string `json:"name"`
 }
 
 func UpsertVenueRoom(venueRoom *VenueRoom) (int32, error) {
-	venueID, err := upsertVenue(venueRoom)
+	venueID, err := UpsertVenue(&venueRoom.Venue)
 	if err != nil {
 		return 0, err
 	}
 
 	venueRoomRow := venueRoomDatabaseRow{
-		VenueID:  venueID,
-		RoomName: venueRoom.RoomName,
+		VenueID: venueID,
+		Name:    venueRoom.Name,
 	}
 
 	data, _, err := database.Client.From("venue_rooms").
-		Upsert(venueRoomRow, "venue_id,room_name", "id", "").
+		Upsert(venueRoomRow, "venue_id,name", "representation", "").
 		Execute()
 	if err != nil {
 		return 0, err
@@ -45,19 +45,19 @@ func UpsertVenueRoom(venueRoom *VenueRoom) (int32, error) {
 	return unmarshalID(data)
 }
 
-func upsertVenue(venueRoom *VenueRoom) (int32, error) {
+func UpsertVenue(venue *Venue) (int32, error) {
 	venueRow := venueDatabaseRow{
-		Address:       venueRoom.Address,
-		Name:          venueRoom.Name,
-		City:          venueRoom.City,
-		Neighbourhood: venueRoom.Neighbourhood,
-		Borough:       venueRoom.Borough,
-		Type:          venueRoom.Type,
-		Contact:       venueRoom.Contact,
+		Name:          venue.Name,
+		Address:       venue.Address,
+		City:          venue.City,
+		Neighbourhood: venue.Neighbourhood,
+		Borough:       venue.Borough,
+		Type:          venue.Type,
+		Contact:       venue.Contact,
 	}
 
 	data, _, err := database.Client.From("venues").
-		Upsert(venueRow, "address,room_name,city,neighbourhood,borough,type,contact", "id", "").
+		Upsert(venueRow, "name,address,city,neighbourhood,borough,type,contact", "representation", "").
 		Execute()
 	if err != nil {
 		return 0, err

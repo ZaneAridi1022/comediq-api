@@ -1,17 +1,24 @@
 venues:
     id             SERIAL
-    address        STRING
-    name           STRING
-    city           STRING
-    neighbourhood  STRING
-    borough        STRING
-    type           STRING
-    contact        STRING
+    name           TEXT
+    address        TEXT
+    city           TEXT
+    neighbourhood  TEXT
+    borough        TEXT
+    type           TEXT
+    contact        TEXT
+
+    PRIMARY KEY: id
+    UNIQUE: name, address, city, neighbourhood, borough, type, contact
 
 venue_rooms:
     id         SERIAL
     venue_id   SERIAL
-    room_name  STRING
+    name       TEXT
+
+    PRIMARY KEY: id
+    FOREIGN KEY: venue_id REFERENCES venues.id
+    UNIQUE: venue_id, name
 
 upcoming_show_instances:
     id                   SERIAL
@@ -30,6 +37,9 @@ upcoming_show_instances:
     end_time             DTZ
     active               BOOLEAN
 
+    PRIMARY KEY: id
+    FOREIGN KEY: venue_room_id REFERENCES venue_rooms.id
+
 show_definitions:
     id                   SERIAL
     venue_room_id        SERIAL
@@ -44,6 +54,9 @@ show_definitions:
     verified             STRING
     occurrence_rules     schedule_rule_ids: <SERIAL | NULL>[7]
 
+    PRIMARY KEY: id
+    FOREIGN KEY: venue_room_id REFERENCES venue_rooms.id
+
 historical_show_instances:
     id              SERIAL
     venue_room_id   SERIAL
@@ -56,12 +69,19 @@ historical_show_instances:
     start_time      DTZ
     end_time        DTZ
 
+    PRIMARY KEY: id
+    FOREIGN KEY: venue_room_id REFERENCES venue_rooms.id
+
 performance_notes:
     id                  SERIAL
 	comedian_id         UUID
 	historical_show_id  SERIAL
 	comedian_notes      STRING
 	video_url           STRING
+
+	PRIMARY KEY: id
+	FOREIGN KEY: comedian_id REFERENCES (comedians table).id
+	FOREIGN KEY: historical_show_id REFERENCES historical_show_instances.id
 
 one_month_day_rule:
     id: SERIAL
@@ -70,3 +90,5 @@ one_month_day_rule:
     weeklyPolicy: [bool, bool, bool, bool, bool]
     StartTime: string
     EndTime: string
+
+    PRIMARY KEY: id

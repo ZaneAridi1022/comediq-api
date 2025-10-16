@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
 
+	"github.com/comediq-api/venues"
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/comediq-api/database"
@@ -20,12 +22,15 @@ func main() {
 		fmt.Println("SUPABASE_URL or SUPABASE_KEY environment variables not set")
 		os.Exit(1)
 	}
-	
+
 	err := database.Init(os.Getenv("SUPABASE_URL"), os.Getenv("SUPABASE_KEY"))
 	if err != nil {
 		fmt.Println("database failed to initialize", err)
 		os.Exit(1)
 	}
+
+	test()
+	return
 
 	router := mux.NewRouter()
 	router.HandleFunc("/shows/historical", historical.HandleCreate).Methods("POST")
@@ -54,4 +59,24 @@ func main() {
 	//
 	// webscrape.Init()
 	// handler := c.Handler(r)
+}
+
+func test() {
+	id, err := venues.UpsertVenueRoom(&venues.VenueRoom{
+		Venue: venues.Venue{
+			Name:          "Name",
+			Address:       "Address",
+			City:          "City",
+			Neighbourhood: "Neighbourhood",
+			Borough:       "Borough",
+			Type:          "Type",
+			Contact:       "Contact",
+		},
+		Name: fmt.Sprintf("Room %v", rand.Int()),
+	})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(id)
 }

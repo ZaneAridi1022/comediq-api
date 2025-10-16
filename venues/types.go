@@ -1,13 +1,16 @@
 package venues
 
-type VenueRoom struct {
-	ID            *int32 `json:"id"`
-	Address       string `json:"address"`
+type Venue struct {
 	Name          string `json:"name"`
+	Address       string `json:"address"`
 	City          string `json:"city"`
 	Neighbourhood string `json:"neighbourhood"`
 	Borough       string `json:"borough"`
 	Type          string `json:"type"`
 	Contact       string `json:"contact"`
-	RoomName      string `json:"room"`
+}
+
+type VenueRoom struct {
+	Venue Venue  `json:"venue"`
+	Name  string `json:"name"`
 }
