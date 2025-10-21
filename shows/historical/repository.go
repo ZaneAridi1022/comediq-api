@@ -9,8 +9,10 @@ import (
 	"github.com/comediq-api/venues"
 )
 
+const tableName = "historical_shows"
+
 type databaseRow struct {
-	ID             *int32    `json:"id"`
+	ID             *int32    `json:"id,omitempty"`
 	VenueRoomID    int32     `json:"venue_room_id"`
 	Name           string    `json:"name"`
 	Host           *string   `json:"host"`
@@ -43,8 +45,8 @@ func create(show *Show) (int32, error) {
 		StartTime:      show.StartTime,
 		EndTime:        show.EndTime,
 	}
-	data, _, err := database.Client.From("historical_show_instances").
-		Insert(dbRow, false, "", "", "").
+	data, _, err := database.Client.From(tableName).
+		Insert(dbRow, false, "", "representation", "").
 		Execute()
 	if err != nil {
 		return 0, err

@@ -13,16 +13,16 @@ venues:
 
 venue_rooms:
     id         SERIAL
-    venue_id   SERIAL
+    venue_id   INTEGER
     name       TEXT
 
     PRIMARY KEY: id
     FOREIGN KEY: venue_id REFERENCES venues.id
     UNIQUE: venue_id, name
 
-upcoming_show_instances:
+upcoming_shows:
     id                   SERIAL
-    venue_room_id        SERIAL
+    venue_room_id        INTEGER
     name                 STRING
     signup_instructions  STRING
     notes                STRING | NULL
@@ -42,7 +42,7 @@ upcoming_show_instances:
 
 show_definitions:
     id                   SERIAL
-    venue_room_id        SERIAL
+    venue_room_id        INTEGER
     name                 STRING
     signup_instructions  STRING
     notes                STRING | NULL
@@ -57,9 +57,9 @@ show_definitions:
     PRIMARY KEY: id
     FOREIGN KEY: venue_room_id REFERENCES venue_rooms.id
 
-historical_show_instances:
+historical_shows:
     id              SERIAL
-    venue_room_id   SERIAL
+    venue_room_id   INTEGER
     name            STRING 
     host            STRING | NULL
     audience_cost   STRING | NULL
@@ -75,7 +75,7 @@ historical_show_instances:
 performance_notes:
     id                  SERIAL
 	comedian_id         UUID
-	historical_show_id  SERIAL
+	historical_show_id  INTEGER
 	comedian_notes      STRING
 	video_url           STRING
 

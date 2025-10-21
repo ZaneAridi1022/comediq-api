@@ -7,6 +7,9 @@ import (
 	"github.com/comediq-api/database"
 )
 
+const venuesTableName = "venues"
+const venueRoomsTableName = "venue_rooms"
+
 type venueDatabaseRow struct {
 	ID            *int32 `json:"id,omitempty"`
 	Name          string `json:"name"`
@@ -17,7 +20,6 @@ type venueDatabaseRow struct {
 	Type          string `json:"type"`
 	Contact       string `json:"contact"`
 }
-
 type venueRoomDatabaseRow struct {
 	ID      *int32 `json:"id,omitempty"`
 	VenueID int32  `json:"venue_id"`
@@ -35,7 +37,7 @@ func UpsertVenueRoom(venueRoom *VenueRoom) (int32, error) {
 		Name:    venueRoom.Name,
 	}
 
-	data, _, err := database.Client.From("venue_rooms").
+	data, _, err := database.Client.From(venueRoomsTableName).
 		Upsert(venueRoomRow, "venue_id,name", "representation", "").
 		Execute()
 	if err != nil {
@@ -56,7 +58,7 @@ func UpsertVenue(venue *Venue) (int32, error) {
 		Contact:       venue.Contact,
 	}
 
-	data, _, err := database.Client.From("venues").
+	data, _, err := database.Client.From(venuesTableName).
 		Upsert(venueRow, "name,address,city,neighbourhood,borough,type,contact", "representation", "").
 		Execute()
 	if err != nil {
