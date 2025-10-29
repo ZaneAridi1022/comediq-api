@@ -11,18 +11,19 @@ import (
 const tableName = "show_definitions"
 
 type databaseRow struct {
-	ID                 *int32  `json:"id,omitempty"`
-	VenueRoomID        int32   `json:"venue_room_id"`
-	Name               string  `json:"name"`
-	SignupInstructions string  `json:"signup_instructions"`
-	Notes              *string `json:"notes"`
-	AudienceCost       *string `json:"audience_cost"`
-	ComedianCost       *string `json:"comedian_cost"`
-	StageTime          *string `json:"stage_time"`
-	Host               *string `json:"host"`
-	SMS                *string `json:"sms"`
-	Verified           string  `json:"verified"`
-	// OccurrenceRules     [7]OneMonthDayRule `json:"occurrence_rules"`
+	ID                 *int32                `json:"id,omitempty"`
+	VenueRoomID        int32                 `json:"venue_room_id"`
+	Name               string                `json:"name"`
+	SignupInstructions string                `json:"signup_instructions"`
+	Notes              *string               `json:"notes"`
+	AudienceCost       *string               `json:"audience_cost"`
+	ComedianCost       *string               `json:"comedian_cost"`
+	StageTime          *string               `json:"stage_time"`
+	Host               *string               `json:"host"`
+	SMS                *string               `json:"sms"`
+	Verified           string                `json:"verified"`
+	Open               bool                  `json:"open"`
+	OccurrenceRules    []WeekDayInAMonthRule `json:"occurrence_rules"`
 }
 
 func create(show *Show) (int32, error) {
@@ -36,14 +37,16 @@ func create(show *Show) (int32, error) {
 	}
 
 	dbRow := databaseRow{
-		VenueRoomID:  venueRoomID,
-		Name:         show.Name,
-		AudienceCost: show.AudienceCost,
-		ComedianCost: show.ComedianCost,
-		StageTime:    show.StageTime,
-		Host:         show.Host,
-		SMS:          show.SMS,
-		Verified:     show.Verified,
+		VenueRoomID:     venueRoomID,
+		Name:            show.Name,
+		AudienceCost:    show.AudienceCost,
+		ComedianCost:    show.ComedianCost,
+		StageTime:       show.StageTime,
+		Host:            show.Host,
+		SMS:             show.SMS,
+		Verified:        show.Verified,
+		Open:            show.Open,
+		OccurrenceRules: show.OccurrenceRules,
 	}
 	data, _, err := database.Client.From(tableName).
 		Insert(dbRow, false, "", "representation", "").

@@ -19,7 +19,8 @@ type Show struct {
 	SMS                *string          `json:"sms"`
 	Verified           string           `json:"verified"`
 	ComedianLineup     []string         `json:"comedian_lineup"`
-	StartTime          time.Time        `json:"start_time"`
-	EndTime            time.Time        `json:"end_time"`
+	StartDateAndTime   time.Time        `json:"start_date_and_time"`
+	EndDateAndTime     time.Time        `json:"end_date_and_time"`
 	Active             bool             `json:"active"`
+	Open               bool             `json:"open"`
 }

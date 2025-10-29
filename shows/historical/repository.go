@@ -12,16 +12,17 @@ import (
 const tableName = "historical_shows"
 
 type databaseRow struct {
-	ID             *int32    `json:"id,omitempty"`
-	VenueRoomID    int32     `json:"venue_room_id"`
-	Name           string    `json:"name"`
-	Host           *string   `json:"host"`
-	AudienceCost   *string   `json:"audience_cost"`
-	ComedianCost   *string   `json:"comedian_cost"`
-	StageTime      *string   `json:"stage_time"`
-	ComedianLineup []string  `json:"comedian_lineup"`
-	StartTime      time.Time `json:"start_time"`
-	EndTime        time.Time `json:"end_time"`
+	ID               *int32    `json:"id,omitempty"`
+	VenueRoomID      int32     `json:"venue_room_id"`
+	Name             string    `json:"name"`
+	Host             *string   `json:"host"`
+	AudienceCost     *string   `json:"audience_cost"`
+	ComedianCost     *string   `json:"comedian_cost"`
+	StageTime        *string   `json:"stage_time"`
+	ComedianLineup   []string  `json:"comedian_lineup"`
+	StartDateAndTime time.Time `json:"start_date_and_time"`
+	EndDateAndTime   time.Time `json:"end_date_and_time"`
+	Open             bool      `json:"open"`
 }
 
 func create(show *Show) (int32, error) {
@@ -35,15 +36,16 @@ func create(show *Show) (int32, error) {
 	}
 
 	dbRow := databaseRow{
-		VenueRoomID:    venueRoomID,
-		Name:           show.Name,
-		Host:           show.Host,
-		AudienceCost:   show.AudienceCost,
-		ComedianCost:   show.ComedianCost,
-		StageTime:      show.StageTime,
-		ComedianLineup: show.ComedianLineup,
-		StartTime:      show.StartTime,
-		EndTime:        show.EndTime,
+		VenueRoomID:      venueRoomID,
+		Name:             show.Name,
+		Host:             show.Host,
+		AudienceCost:     show.AudienceCost,
+		ComedianCost:     show.ComedianCost,
+		StageTime:        show.StageTime,
+		ComedianLineup:   show.ComedianLineup,
+		StartDateAndTime: show.StartDateAndTime,
+		EndDateAndTime:   show.EndDateAndTime,
+		Open:             show.Open,
 	}
 	data, _, err := database.Client.From(tableName).
 		Insert(dbRow, false, "", "representation", "").

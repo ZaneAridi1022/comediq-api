@@ -24,9 +24,10 @@ type databaseRow struct {
 	SMS                *string   `json:"sms"`
 	Verified           string    `json:"verified"`
 	ComedianLineup     []string  `json:"comedian_lineup"`
-	StartTime          time.Time `json:"start_time"`
-	EndTime            time.Time `json:"end_time"`
+	StartDateAndTime   time.Time `json:"start_date_and_time"`
+	EndDateAndTime     time.Time `json:"end_date_and_time"`
 	Active             bool      `json:"active"`
+	Open               bool      `json:"open"`
 }
 
 func create(show *Show) (int32, error) {
@@ -51,9 +52,10 @@ func create(show *Show) (int32, error) {
 		SMS:                show.SMS,
 		Verified:           show.Verified,
 		ComedianLineup:     show.ComedianLineup,
-		StartTime:          show.StartTime,
-		EndTime:            show.EndTime,
+		StartDateAndTime:   show.StartDateAndTime,
+		EndDateAndTime:     show.EndDateAndTime,
 		Active:             show.Active,
+		Open:               show.Open,
 	}
 	data, _, err := database.Client.From(tableName).
 		Insert(dbRow, false, "", "representation", "").

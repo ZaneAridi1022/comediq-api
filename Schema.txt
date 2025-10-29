@@ -20,25 +20,12 @@ venue_rooms:
     FOREIGN KEY: venue_id REFERENCES venues.id
     UNIQUE: venue_id, name
 
-upcoming_shows:
-    id                   SERIAL
-    venue_room_id        INTEGER
-    name                 STRING
-    signup_instructions  STRING
-    notes                STRING | NULL
-    audience_cost        STRING | NULL
-    comedian_cost        STRING | NULL
-    stage_time           STRING | NULL
-    host                 STRING | NULL
-    sms                  STRING | NULL
-    verified             STRING
-    comedian_lineup      STRING[]
-    start_time           DTZ
-    end_time             DTZ
-    active               BOOLEAN
-
-    PRIMARY KEY: id
-    FOREIGN KEY: venue_room_id REFERENCES venue_rooms.id
+type week_day_in_a_month_rule:
+    weeks_in_advance:      INTEGER
+    weeks_of_month_policy: BOOLEAN[5]
+    week_day:              INTEGER               // Integer from 0 to 6 (Sunday - Saturday)
+    start_time:            TIMESTAMPTZ
+    end_time:              TIMESTAMPTZ
 
 show_definitions:
     id                   SERIAL
@@ -52,22 +39,47 @@ show_definitions:
     host                 STRING | NULL
     sms                  STRING | NULL
     verified             STRING
-    occurrence_rules     schedule_rule_ids: <SERIAL | NULL>[7]
+    open                 BOOLEAN
+    occurrence_rules     <week_day_in_a_month_rule | NULL>[]
 
     PRIMARY KEY: id
     FOREIGN KEY: venue_room_id REFERENCES venue_rooms.id
 
+upcoming_shows:
+    id                   SERIAL
+    venue_room_id        INTEGER
+    name                 STRING
+    signup_instructions  STRING
+    notes                STRING | NULL
+    audience_cost        STRING | NULL
+    comedian_cost        STRING | NULL
+    stage_time           STRING | NULL
+    host                 STRING | NULL
+    sms                  STRING | NULL
+    verified             STRING
+    comedian_lineup      STRING[]
+    start_date_and_time  TIMESTAMPTZ
+    end_date_and_time    TIMESTAMPTZ
+    active               BOOLEAN
+    open                 BOOLEAN
+
+    PRIMARY KEY: id
+    FOREIGN KEY: venue_room_id REFERENCES venue_rooms.id
+    FOREIGN KEY: definition_id REFERENCES show_definitions.id
+    UNIQUE: venue_room_id, start_date_and_time
+
 historical_shows:
-    id              SERIAL
-    venue_room_id   INTEGER
-    name            STRING 
-    host            STRING | NULL
-    audience_cost   STRING | NULL
-    comedian_cost   STRING | NULL
-    stage_time      STRING | NULL
-    comedian_lineup STRING[]
-    start_time      DTZ
-    end_time        DTZ
+    id                  SERIAL
+    venue_room_id       INTEGER
+    name                STRING
+    host                STRING | NULL
+    audience_cost       STRING | NULL
+    comedian_cost       STRING | NULL
+    stage_time          STRING | NULL
+    comedian_lineup     STRING[]
+    start_date_and_time TIMESTAMPTZ
+    end_date_and_time   TIMESTAMPTZ
+    open                BOOLEAN
 
     PRIMARY KEY: id
     FOREIGN KEY: venue_room_id REFERENCES venue_rooms.id
@@ -83,12 +95,3 @@ performance_notes:
 	FOREIGN KEY: comedian_id REFERENCES (comedians table).id
 	FOREIGN KEY: historical_show_id REFERENCES historical_show_instances.id
 
-one_month_day_rule:
-    id: SERIAL
-    monthsPreparedInAdvance: int (default 1)
-    onlyLastDayOfMonth: bool
-    weeklyPolicy: [bool, bool, bool, bool, bool]
-    StartTime: string
-    EndTime: string
-
-    PRIMARY KEY: id
