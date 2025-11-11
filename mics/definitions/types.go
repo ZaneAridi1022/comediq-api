@@ -1,4 +1,4 @@
-package definition
+package definitions
 
 import (
 	"time"
@@ -7,20 +7,21 @@ import (
 	"github.com/comediq-api/venues"
 )
 
-type Show struct {
+type Mic struct {
 	ID                 *int32                `json:"id"`
-	VenueRoom          venues.VenueRoom      `json:"venue_room"`
-	Name               string                `json:"name"`
-	SignupInstructions string                `json:"signup_instructions"`
+	VenueRoom          venues.VenueRoom      `json:"venue_room"          validation:"required"`
+	Name               string                `json:"name"                validation:"required,min=1"`
+	SignupInstructions *string               `json:"signup_instructions" validation:"required,min=1"`
 	Notes              *string               `json:"notes"`
-	AudienceCost       *string               `json:"audience_cost"`
-	ComedianCost       *string               `json:"comedian_cost"`
+	AudienceCost       string                `json:"audience_cost"       validation:"required,min=1"`
+	ComedianCost       string                `json:"comedian_cost"       validation:"required,min=1"`
 	StageTime          *string               `json:"stage_time"`
 	Host               *string               `json:"host"`
+	Instagram          *string               `json:"instagram"`
 	SMS                *string               `json:"sms"`
-	Verified           string                `json:"verified"`
-	Open               bool                  `json:"open"`
-	OccurrenceRules    []WeekDayInAMonthRule `json:"occurrence_rules"`
+	Verified           *string               `json:"verified"`
+	Active             bool                  `json:"active"`
+	OccurrenceRules    []WeekDayInAMonthRule `json:"occurrence_rules" validation:"dive"`
 }
 
 type WeekDayInAMonthRule struct {

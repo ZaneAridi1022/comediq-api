@@ -25,6 +25,7 @@ require (
 	golang.org/x/text v0.28.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
+	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
 )
 
 require (

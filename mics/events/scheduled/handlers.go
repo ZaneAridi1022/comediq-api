@@ -1,9 +1,11 @@
-package historical
+package scheduled
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/comediq-api/validation"
 )
 
 func HandleCreate(w http.ResponseWriter, r *http.Request) {
@@ -13,17 +15,22 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var show Show
-	var err = json.NewDecoder(r.Body).Decode(&show)
+	var mic Mic
+	var err = json.NewDecoder(r.Body).Decode(&mic)
 	if err != nil {
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	_, err = Create(&show)
+	if validation.Validate.Struct(mic) != nil {
+		http.Error(w, "Invalid JSON schema", http.StatusBadRequest)
+		return
+	}
+
+	_, err = Create(&mic)
 	if err != nil {
-		log.Printf("error creating show: %v", err)
-		http.Error(w, "Failed to create show", http.StatusInternalServerError)
+		log.Printf("error creating mic: %v", err)
+		http.Error(w, "Failed to create mic", http.StatusInternalServerError)
 		return
 	}
 

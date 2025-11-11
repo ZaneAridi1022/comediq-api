@@ -11,19 +11,19 @@ const venuesTableName = "venues"
 const venueRoomsTableName = "venue_rooms"
 
 type venueDatabaseRow struct {
-	ID            *int32 `json:"id,omitempty"`
-	Name          string `json:"name"`
-	Address       string `json:"address"`
-	City          string `json:"city"`
-	Neighbourhood string `json:"neighbourhood"`
-	Borough       string `json:"borough"`
-	Type          string `json:"type"`
-	Contact       string `json:"contact"`
+	ID            *int32  `json:"id,omitempty"`
+	Name          string  `json:"name"`
+	Address       string  `json:"address"`
+	City          string  `json:"city"`
+	Neighbourhood *string `json:"neighbourhood"`
+	Borough       *string `json:"borough"`
+	Type          *string `json:"type"`
+	Contact       *string `json:"contact"`
 }
 type venueRoomDatabaseRow struct {
-	ID      *int32 `json:"id,omitempty"`
-	VenueID int32  `json:"venue_id"`
-	Name    string `json:"name"`
+	ID      *int32  `json:"id,omitempty"`
+	VenueID int32   `json:"venue_id"`
+	Name    *string `json:"name"`
 }
 
 func UpsertVenueRoom(venueRoom *VenueRoom) (int32, error) {

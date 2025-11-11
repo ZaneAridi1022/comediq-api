@@ -7,19 +7,21 @@ import (
 	"os"
 	"time"
 
-	"github.com/comediq-api/shows/definition"
-	"github.com/comediq-api/utils"
+	"github.com/comediq-api/mics/definitions"
+	"github.com/comediq-api/mics/events/past"
+	"github.com/comediq-api/validation"
 	"github.com/comediq-api/venues"
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/comediq-api/database"
-	"github.com/comediq-api/shows/historical"
-	"github.com/comediq-api/shows/upcoming"
+	"github.com/comediq-api/mics/events/scheduled"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
 
 func main() {
+	validation.Init()
+
 	url, key := os.Getenv("SUPABASE_URL"), os.Getenv("SUPABASE_KEY")
 	if url == "" || key == "" {
 		fmt.Println("SUPABASE_URL or SUPABASE_KEY environment variables not set")
@@ -31,13 +33,15 @@ func main() {
 		fmt.Println("database failed to initialize", err)
 		os.Exit(1)
 	}
+	fmt.Println("database client initialized")
 
-	test()
-	return
+	//test()
+	//return
 
 	router := mux.NewRouter()
-	router.HandleFunc("/shows/historical", historical.HandleCreate).Methods("POST")
-	router.HandleFunc("/shows/upcoming", upcoming.HandleCreate).Methods("POST")
+	router.HandleFunc("/mics/definition", definitions.HandleCreate).Methods("POST")
+	router.HandleFunc("/mics/scheduled", scheduled.HandleCreate).Methods("POST")
+	router.HandleFunc("/mics/past", past.HandleCreate).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -65,46 +69,33 @@ func main() {
 }
 
 func test() {
-	showDefinitions := generateRandomUnregisteredShowDefinitions()
-	for _, show := range showDefinitions {
-		_, err := definition.Create(&show)
+	micDefinitions := generateRandomUnregisteredMicDefinitions()
+	for _, mic := range micDefinitions {
+		_, err := definitions.Create(&mic)
 		if err != nil {
-			fmt.Println("database failed to create show definition", err)
+			fmt.Println("database failed to create mic definitions: ", err)
 		}
 	}
 
-	upcomingShows := generateRandomUnregisteredUpcomingShows()
-	for _, show := range upcomingShows {
-		_, err := upcoming.Create(&show)
+	scheduledMicEvents := generateRandomUnregisteredScheduledMics()
+	for _, mic := range scheduledMicEvents {
+		_, err := scheduled.Create(&mic)
 		if err != nil {
-			fmt.Println("database failed to create upcoming show", err)
+			fmt.Println("database failed to create scheduled mic event: ", err)
 		}
 	}
 
-	historicalShows := generateRandomUnregisteredHistoricalShows()
-	for _, show := range historicalShows {
-		_, err := historical.Create(&show)
+	pastMicEvents := generateRandomUnregisteredPastMics()
+	for _, mic := range pastMicEvents {
+		_, err := past.Create(&mic)
 		if err != nil {
-			fmt.Println("database failed to create historical show", err)
+			fmt.Println("database failed to create past mic event: ", err)
 		}
 	}
 
-	showDef := definition.Show{
-		ID: utils.Int32(1),
-		VenueRoom: venues.VenueRoom{
-			Venue: venues.Venue{
-				Name:          "a",
-				Address:       "a",
-				City:          "a",
-				Neighbourhood: "a",
-				Borough:       "a",
-				Type:          "a",
-				Contact:       "a",
-			},
-			Name: "b",
-		},
-		Name: "Scheduled Show",
-		OccurrenceRules: []definition.WeekDayInAMonthRule{
+	micDef := definitions.Mic{
+		Name: "Scheduled Mic",
+		OccurrenceRules: []definitions.WeekDayInAMonthRule{
 			{
 				WeeksInAdvance:     5,
 				WeeksOfMonthPolicy: [5]bool{true, true, false, true, true},
@@ -128,74 +119,73 @@ func test() {
 			},
 		},
 	}
-	err := definition.AutoSchedule(&showDef)
+	id, _ := definitions.Create(&micDef)
+	micDef.ID = &id
+	err := definitions.AutoSchedule(&micDef)
 	if err != nil {
-		fmt.Println("failed to auto schedule", err)
+		fmt.Println("failed to auto schedule: ", err)
 	}
 }
 
-func generateRandomUnregisteredHistoricalShows() []historical.Show {
-	var shows []historical.Show
+func generateRandomUnregisteredMicDefinitions() []definitions.Mic {
+	var micDefinition []definitions.Mic
 	for i := 1; i <= 100; i++ {
-		shows = append(shows, historical.Show{
+		micDefinition = append(micDefinition, definitions.Mic{
+			VenueRoom:          getRandomVenueRoom(),
+			Name:               fmt.Sprintf("Name %d", i),
+			SignupInstructions: chanceOfNil(0.3, fmt.Sprintf("Signup instructions #%d", i)),
+			Notes:              chanceOfNil(0.3, fmt.Sprintf("Notes #%d", i)),
+			AudienceCost:       fmt.Sprintf("$%d", i),
+			ComedianCost:       fmt.Sprintf("$%d", i+10),
+			StageTime:          chanceOfNil(0.5, fmt.Sprintf("%d minutes", i)),
+			Host:               chanceOfNil(0.3, fmt.Sprintf("Host #%d", i)),
+			Instagram:          chanceOfNil(0.3, fmt.Sprintf("@%d", i)),
+			SMS:                chanceOfNil(0.3, fmt.Sprintf("%d", i*12312312)),
+			Verified:           chanceOfNil(0.3, fmt.Sprintf("Verified #%d", i)),
+			Active:             randBool(),
+			OccurrenceRules:    randomOccurrenceRules(),
+		})
+	}
+	return micDefinition
+}
+
+func generateRandomUnregisteredScheduledMics() []scheduled.Mic {
+	var mics []scheduled.Mic
+	for i := 1; i <= 100; i++ {
+		mics = append(mics, scheduled.Mic{
+			VenueRoom:          getRandomVenueRoom(),
+			Name:               fmt.Sprintf("Name %d", i),
+			SignupInstructions: chanceOfNil(0.3, fmt.Sprintf("Signup instructions #%d", i)),
+			Notes:              chanceOfNil(0.3, fmt.Sprintf("Notes #%d", i)),
+			AudienceCost:       fmt.Sprintf("$%d", i),
+			ComedianCost:       fmt.Sprintf("$%d", i),
+			StageTime:          chanceOfNil(0.5, fmt.Sprintf("%d minutes", i)),
+			Host:               chanceOfNil(0.3, fmt.Sprintf("Host #%d", i)),
+			SMS:                chanceOfNil(0.3, fmt.Sprintf("%d", i*12312312)),
+			ComedianLineup:     randomComedianLineUp(),
+			StartDateAndTime:   time.Now().Add(time.Duration(rand.Intn(500)) * time.Second),
+			EndDateAndTime:     time.Now().Add(time.Duration(500+rand.Intn(500)) * time.Second),
+		})
+	}
+	return mics
+}
+
+func generateRandomUnregisteredPastMics() []past.Mic {
+	var mics []past.Mic
+	for i := 1; i <= 100; i++ {
+		mics = append(mics, past.Mic{
 			VenueRoom:        getRandomVenueRoom(),
 			Name:             fmt.Sprintf("Name %d", i),
 			Host:             chanceOfNil(0.3, fmt.Sprintf("Host #%d", i)),
-			AudienceCost:     chanceOfNil(0.3, fmt.Sprintf("$%d", i)),
-			ComedianCost:     chanceOfNil(0.5, fmt.Sprintf("$%d", i)),
+			AudienceCost:     fmt.Sprintf("$%d", i),
+			ComedianCost:     fmt.Sprintf("$%d", i),
 			StageTime:        chanceOfNil(0.5, fmt.Sprintf("%d minutes", i)),
 			ComedianLineup:   randomComedianLineUp(),
 			StartDateAndTime: time.Now().Add(time.Duration(rand.Intn(500)) * time.Second),
 			EndDateAndTime:   time.Now().Add(time.Duration(500+rand.Intn(500)) * time.Second),
-			Open:             randBool(),
 		})
 	}
-	return shows
-}
-
-func generateRandomUnregisteredShowDefinitions() []definition.Show {
-	var showDefinitions []definition.Show
-	for i := 1; i <= 100; i++ {
-		showDefinitions = append(showDefinitions, definition.Show{
-			VenueRoom:          getRandomVenueRoom(),
-			Name:               fmt.Sprintf("Name %d", i),
-			SignupInstructions: fmt.Sprintf("Signup instructions #%d", i),
-			Notes:              chanceOfNil(0.3, fmt.Sprintf("Notes #%d", i)),
-			AudienceCost:       chanceOfNil(0.3, fmt.Sprintf("$%d", i)),
-			ComedianCost:       chanceOfNil(0.5, fmt.Sprintf("$%d", i+10)),
-			StageTime:          chanceOfNil(0.5, fmt.Sprintf("%d minutes", i)),
-			Host:               chanceOfNil(0.3, fmt.Sprintf("Host #%d", i)),
-			SMS:                chanceOfNil(0.3, fmt.Sprintf("%d", i*12312312)),
-			Verified:           fmt.Sprintf("Verified #%d", i),
-			Open:               randBool(),
-			OccurrenceRules:    randomOccurrenceRules(),
-		})
-	}
-	return showDefinitions
-}
-
-func generateRandomUnregisteredUpcomingShows() []upcoming.Show {
-	var shows []upcoming.Show
-	for i := 1; i <= 100; i++ {
-		shows = append(shows, upcoming.Show{
-			VenueRoom:          getRandomVenueRoom(),
-			Name:               fmt.Sprintf("Name %d", i),
-			SignupInstructions: fmt.Sprintf("Signup instructions #%d", i),
-			Notes:              chanceOfNil(0.3, fmt.Sprintf("Notes #%d", i)),
-			AudienceCost:       chanceOfNil(0.3, fmt.Sprintf("$%d", i)),
-			ComedianCost:       chanceOfNil(0.5, fmt.Sprintf("$%d", i)),
-			StageTime:          chanceOfNil(0.5, fmt.Sprintf("%d minutes", i)),
-			Host:               chanceOfNil(0.3, fmt.Sprintf("Host #%d", i)),
-			SMS:                chanceOfNil(0.3, fmt.Sprintf("%d", i*12312312)),
-			Verified:           fmt.Sprintf("Verified #%d", i),
-			ComedianLineup:     randomComedianLineUp(),
-			StartDateAndTime:   time.Now().Add(time.Duration(rand.Intn(500)) * time.Second),
-			EndDateAndTime:     time.Now().Add(time.Duration(500+rand.Intn(500)) * time.Second),
-			Active:             randBool(),
-			Open:               randBool(),
-		})
-	}
-	return shows
+	return mics
 }
 
 func getRandomVenueRoom() venues.VenueRoom {
@@ -204,12 +194,12 @@ func getRandomVenueRoom() venues.VenueRoom {
 			Name:          fmt.Sprintf("Venue #%d", rand.Intn(2)),
 			Address:       "1234 Example Street",
 			City:          "Yorknew City",
-			Neighbourhood: "Examplehood",
-			Borough:       "some borough",
-			Type:          "Normal",
-			Contact:       "+1 123 123 1234",
+			Neighbourhood: chanceOfNil(0.5, "Examplehood"),
+			Borough:       chanceOfNil(0.5, "some borough"),
+			Type:          chanceOfNil(0.5, "Normal"),
+			Contact:       chanceOfNil(0.5, "+1 123 123 1234"),
 		},
-		Name: fmt.Sprintf("Room #%d", rand.Intn(5)+1),
+		Name: chanceOfNil(0.5, fmt.Sprintf("Room #%d", rand.Intn(5)+1)),
 	}
 }
 
@@ -228,10 +218,10 @@ func randomComedianLineUp() []string {
 	return comedianLineUp
 }
 
-func randomOccurrenceRules() []definition.WeekDayInAMonthRule {
-	occurrenceRules := []definition.WeekDayInAMonthRule{}
+func randomOccurrenceRules() []definitions.WeekDayInAMonthRule {
+	occurrenceRules := []definitions.WeekDayInAMonthRule{}
 	for i := 0; i < rand.Intn(10); i++ {
-		occurrenceRules = append(occurrenceRules, definition.WeekDayInAMonthRule{
+		occurrenceRules = append(occurrenceRules, definitions.WeekDayInAMonthRule{
 			WeeksInAdvance:     int32(rand.Intn(5) + 1),
 			WeeksOfMonthPolicy: [5]bool{randBool(), randBool(), randBool(), randBool(), randBool()},
 			WeekDay:            int32(rand.Intn(7)),
@@ -248,5 +238,5 @@ func randBool() bool {
 
 func timeParse(s string) time.Time {
 	parse, _ := time.Parse("3:04 PM", s)
-	return parse
+	return parse.AddDate(time.Now().Year(), 0, 0)
 }
