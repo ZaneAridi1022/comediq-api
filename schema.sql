@@ -16,7 +16,7 @@ CREATE TABLE venues (
     type          TEXT,
     contact       TEXT,
 
-    CONSTRAINT unique_venue UNIQUE (name, address, city, neighbourhood, borough, type, contact)
+    CONSTRAINT unique_venue UNIQUE NULLS NOT DISTINCT (name, address, city, neighbourhood, borough, type, contact)
 );
 
 CREATE TABLE venue_rooms (
@@ -25,7 +25,7 @@ CREATE TABLE venue_rooms (
     name     TEXT,
 
     CONSTRAINT fk_venue FOREIGN KEY (venue_id) REFERENCES venues(id) ON DELETE CASCADE,
-    CONSTRAINT unique_venue_room UNIQUE (venue_id, name)
+    CONSTRAINT unique_venue_room UNIQUE NULLS NOT DISTINCT (venue_id, name)
 );
 
 CREATE TYPE week_day_in_a_month_rule AS (
@@ -79,7 +79,7 @@ CREATE TABLE scheduled_mic_events (
     CONSTRAINT unique_definition_venue_room_start_date_and_time UNIQUE (
         definition_id, venue_room_id, start_date_and_time
     )
-); -- Delete rows if the definitions is inactive
+);
 
 -- Mic events that have already happened and are logged here
 CREATE TABLE past_mic_events (
